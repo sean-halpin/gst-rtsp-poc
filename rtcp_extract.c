@@ -68,14 +68,6 @@ main (int   argc,
 
   loop = g_main_loop_new (NULL, FALSE);
 
-
-  // /* Check input arguments */
-  // if (argc != 2) {
-  //   g_printerr ("Usage: %s <Ogg/Vorbis filename>\n", argv[0]);
-  //   return -1;
-  // }
-
-
   /* Create gstreamer elements */
   pipeline = gst_pipeline_new ("rtsp-player");
   source   = gst_element_factory_make ("rtspsrc",  "src-source");
@@ -88,7 +80,7 @@ main (int   argc,
 
   /* Set up the pipeline */
 
-  /* we set the input filename to the source element */
+  /* we set the element props */
   g_object_set (G_OBJECT (source), 
     //"location", "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov", 
     "location", "rtsp://0.0.0.0:8554/live.sdp",
@@ -105,17 +97,16 @@ main (int   argc,
     "location", "filesink.output", 
     NULL);
 
-  /* we add a message handler */
+  /* add a message handler */
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
   bus_watch_id = gst_bus_add_watch (bus, bus_call, loop);
   gst_object_unref (bus);
 
-  /* we add all elements into the pipeline */
+  /* add all elements into the pipeline */
   gst_bin_add_many (GST_BIN (pipeline),
                     source, capsfilter, sink, NULL);
 
-  /* we link the elements together */
-  //gst_element_link (source, sink);
+  /* link the elements together */
   gst_element_link_many (source, capsfilter, sink, NULL);
   g_signal_connect (source, "pad-added", G_CALLBACK (on_pad_added), sink);
 
@@ -123,11 +114,9 @@ main (int   argc,
   g_print ("Now playing: %s\n", argv[1]);
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-
   /* Iterate */
   g_print ("Running...\n");
   g_main_loop_run (loop);
-
 
   /* Out of the main loop, clean up nicely */
   g_print ("Returned, stopping playback\n");
